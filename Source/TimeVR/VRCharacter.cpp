@@ -23,16 +23,19 @@ AVRCharacter::AVRCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(VRRoot);
 
-	HandsRoot = CreateDefaultSubobject<USceneComponent>(TEXT("HandsRoot"));
-	HandsRoot->SetupAttachment(VRRoot);
+//	HandsRoot = CreateDefaultSubobject<USceneComponent>(TEXT("HandsRoot"));
+//	HandsRoot->SetupAttachment(VRRoot);
 
 	LeftController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftController"));
-	LeftController->SetupAttachment(HandsRoot);
+	LeftController->SetupAttachment(VRRoot);
 	LeftController->SetTrackingMotionSource(FXRMotionControllerBase::LeftHandSourceId);
 
 	RightController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightController"));
-	RightController->SetupAttachment(HandsRoot);
+	RightController->SetupAttachment(VRRoot);
 	RightController->SetTrackingMotionSource(FXRMotionControllerBase::RightHandSourceId);
+
+	InvalidTeleportMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InvalidTeleportMesh"));
+	InvalidTeleportMesh->SetupAttachment(RightController);
 
 	TeleportPath = CreateDefaultSubobject<USplineComponent>(TEXT("TeleportPath"));
 	TeleportPath->SetupAttachment(RightController);
@@ -78,7 +81,6 @@ void AVRCharacter::Tick(float DeltaTime)
 
 bool AVRCharacter::FindDestinationMarker(TArray<FVector>& OutPath, FVector& OutLocation)
 {
-
 	FVector Start = RightController->GetComponentLocation();
 	FVector LookVector = RightController->GetForwardVector();
 	// LookVector = LookVector.RotateAngleAxis(30, RightController->GetRightVector());
@@ -132,12 +134,14 @@ void AVRCharacter::UpdateDestinationMarker()
 			DestinationMarker->SetWorldLocation(OutLocation);
 		}
 		DrawTeleportPath(Path);
+		InvalidTeleportMesh->SetVisibility(false);
 	}
 	else {
 		DestinationMarker->SetVisibility(false);
 
 		TArray <FVector>EmptyPath;
 		DrawTeleportPath(EmptyPath);
+		InvalidTeleportMesh->SetVisibility(true);
 	};
 }
 

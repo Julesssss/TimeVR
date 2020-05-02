@@ -82,9 +82,6 @@ private:
 	class USceneComponent* VRRoot;
 
 	UPROPERTY(VisibleAnywhere)
-	class USceneComponent* HandsRoot;
-
-	UPROPERTY(VisibleAnywhere)
 	class USplineComponent* TeleportPath;
 
 	UPROPERTY(VisibleAnywhere)
@@ -94,7 +91,7 @@ private:
 	class UPostProcessComponent* PostProcessComponent;
 
 	UPROPERTY(VisibleAnywhere)
-	class UStaticMeshComponent* DynamicMesh;
+	class UStaticMeshComponent* InvalidTeleportMesh;
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<class USplineMeshComponent*> ArcMeshObjctPool;
