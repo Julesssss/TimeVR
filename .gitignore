@@ -1,6 +1,10 @@
 # Visual Studio 2015 user specific files
 .vs/
 
+# Steam VR
+Config/steamvr_ue_editor_app.json
+Config/SteamVRBindings/
+
 # Compiled Object files
 *.slo
 *.lo
