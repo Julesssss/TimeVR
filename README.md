@@ -15,7 +15,7 @@ For the moment you will need to build the prject locally in order to play, but l
 
 #### Building the project
 
-Make sure you have the matching Unreak Engine version installed, you should then be able to open the project.
+Make sure you have the matching Unreal Engine version installed, you should then be able to open the project.
 
 #### Contributing to the project
 
