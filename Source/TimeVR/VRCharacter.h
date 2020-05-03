@@ -122,7 +122,7 @@ private:
 	FVector TeleportProjectionExtent = FVector(100, 100, 100);
 
 	UPROPERTY(EditAnywhere)
-	float UnitsBetweenlevels = 3000.0f;
+	float UnitsBetweenlevels = 4000.0f;
 
 
 	// Editable by Blueprint

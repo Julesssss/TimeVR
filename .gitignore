@@ -5,6 +5,9 @@
 Config/steamvr_ue_editor_app.json
 Config/SteamVRBindings/
 
+# Builds
+Builds/
+
 # Compiled Object files
 *.slo
 *.lo
