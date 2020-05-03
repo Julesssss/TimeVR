@@ -49,6 +49,9 @@ private:
 	void MoveForward(float throttle);
 	void MoveRight(float throttle);
 
+	void TimeTravel();
+	void ResetPlayer();
+
 	void BeginTeleport();
 	void DoTeleport();
 	void EndTeleport();
@@ -65,6 +68,8 @@ private:
 	bool IsTeleporting = false;
 
 	bool IsFading = false;
+
+	bool IsInPast = false;
 	
 
 	// References
@@ -115,6 +120,10 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	FVector TeleportProjectionExtent = FVector(100, 100, 100);
+
+	UPROPERTY(EditAnywhere)
+	float UnitsBetweenlevels = 3000.0f;
+
 
 	// Editable by Blueprint
 

@@ -23,9 +23,6 @@ AVRCharacter::AVRCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(VRRoot);
 
-//	HandsRoot = CreateDefaultSubobject<USceneComponent>(TEXT("HandsRoot"));
-//	HandsRoot->SetupAttachment(VRRoot);
-
 	LeftController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftController"));
 	LeftController->SetupAttachment(VRRoot);
 	LeftController->SetTrackingMotionSource(FXRMotionControllerBase::LeftHandSourceId);
@@ -237,6 +234,8 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAxis(TEXT("Forward"), this, &AVRCharacter::MoveForward);
 	PlayerInputComponent->BindAxis(TEXT("Right"), this, &AVRCharacter::MoveRight);
 	PlayerInputComponent->BindAction(TEXT("Teleport"), IE_Released, this, &AVRCharacter::BeginTeleport);
+	PlayerInputComponent->BindAction(TEXT("TimeTravel"), IE_Released, this, &AVRCharacter::TimeTravel);
+	PlayerInputComponent->BindAction(TEXT("ResetPlayer"), IE_Released, this, &AVRCharacter::ResetPlayer);
 }
 
 void AVRCharacter::MoveForward(float throttle)
@@ -247,6 +246,27 @@ void AVRCharacter::MoveForward(float throttle)
 void AVRCharacter::MoveRight(float throttle)
 {
 	AddMovementInput(throttle * Camera->GetRightVector());
+}
+
+// Switch between the levels to simlulate time travel
+void AVRCharacter::TimeTravel()
+{
+	FVector currentLocation = GetActorLocation();
+	if (IsInPast) {
+		currentLocation.Y -= UnitsBetweenlevels;
+	}
+	else {
+		currentLocation.Y += UnitsBetweenlevels;
+	}
+	SetActorLocation(currentLocation);
+	IsInPast = !IsInPast;
+}
+
+// Reset the play location (in case you fall off the map)
+void AVRCharacter::ResetPlayer()
+{
+	SetActorLocation(FVector(0.0, 0.0, 112.0));
+	IsInPast = false;
 }
 
 void AVRCharacter::BeginTeleport()
