@@ -37,7 +37,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-private:
+private: // Configuration Parameters
 
 	// Functions
 
@@ -61,6 +61,7 @@ private:
 
 	void CameraFade(float FromAlpha, float ToAlpha, bool ShouldHold);
 
+	void GrabItem();
 
 	// Globals
 
@@ -83,10 +84,10 @@ private:
 	class UCameraComponent* Camera;
 
 	UPROPERTY(VisibleAnywhere)
-	class UMotionControllerComponent* LeftController;
+	class AHandController* LeftController;
 
 	UPROPERTY(VisibleAnywhere)
-	class UMotionControllerComponent* RightController;
+	class AHandController* RightController;
 
 	UPROPERTY(VisibleAnywhere)
 	class USceneComponent* VRRoot;
@@ -96,9 +97,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* DestinationMarker;
-
-	UPROPERTY(VisibleAnywhere)
-	class UPostProcessComponent* PostProcessComponent;
 
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* InvalidTeleportMesh;
@@ -137,4 +135,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	UMaterialInterface* TeleportArcMaterial;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AHandController> HandControllerClass;
 };

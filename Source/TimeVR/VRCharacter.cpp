@@ -10,6 +10,7 @@
 #include "DrawDebugHelpers.h"
 #include "Components/StaticMeshComponent.h"
 #include "IHeadMountedDisplay.h"
+#include "HandController.h"
 #include "Components/SplineMeshComponent.h"
 
 // Sets default values
@@ -27,25 +28,14 @@ AVRCharacter::AVRCharacter()
 		Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 		Camera->SetupAttachment(VRRoot);
 
-		LeftController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftController"));
-		LeftController->SetupAttachment(VRRoot);
-		LeftController->SetTrackingMotionSource(FXRMotionControllerBase::LeftHandSourceId);
-
-		RightController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightController"));
-		RightController->SetupAttachment(VRRoot);
-		RightController->SetTrackingMotionSource(FXRMotionControllerBase::RightHandSourceId);
-
 		InvalidTeleportMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InvalidTeleportMesh"));
-		InvalidTeleportMesh->SetupAttachment(RightController);
+		InvalidTeleportMesh->SetupAttachment(VRRoot);
 
 		TeleportPath = CreateDefaultSubobject<USplineComponent>(TEXT("TeleportPath"));
-		TeleportPath->SetupAttachment(RightController);
+		TeleportPath->SetupAttachment(VRRoot);
 
 		DestinationMarker = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DestinationMarker"));
 		DestinationMarker->SetupAttachment(GetRootComponent());
-
-		PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent"));
-		PostProcessComponent->SetupAttachment(GetRootComponent());
 	}
 	else {
 		// Hide the VR stuff
@@ -62,6 +52,23 @@ void AVRCharacter::BeginPlay()
 
 	// Setup global references
 	PlayerController = Cast<APlayerController>(GetController());
+
+	// Set up motion controllers
+	if (IsVR) {
+		LeftController = GetWorld()->SpawnActor<AHandController>(HandControllerClass);
+		if (LeftController != nullptr) {
+			LeftController->AttachToComponent(VRRoot, FAttachmentTransformRules::KeepRelativeTransform);
+			LeftController->SetOwner(this);
+			LeftController->SetHand(FXRMotionControllerBase::LeftHandSourceId);
+		}
+
+		RightController = GetWorld()->SpawnActor<AHandController>(HandControllerClass);
+		if (RightController != nullptr) {
+			RightController->AttachToComponent(VRRoot, FAttachmentTransformRules::KeepRelativeTransform);
+			RightController->SetOwner(this);
+			RightController->SetHand(FXRMotionControllerBase::RightHandSourceId);
+		}
+	}
 }
 
 // Called every frame
@@ -82,17 +89,13 @@ void AVRCharacter::Tick(float DeltaTime)
 	// Move VRRoot in opposite Vector
 	VRRoot->AddWorldOffset(-CameraOffset);
 
-	// Move Controllers in opposite Vector // THIS DOES NOTHING?!?!?!
-	RightController->AddWorldOffset(CameraOffset);
-
 	UpdateDestinationMarker();
 }
 
 bool AVRCharacter::FindDestinationMarker(TArray<FVector>& OutPath, FVector& OutLocation)
 {
-	FVector Start = RightController->GetComponentLocation();
-	FVector LookVector = RightController->GetForwardVector();
-	// LookVector = LookVector.RotateAngleAxis(30, RightController->GetRightVector());
+	FVector Start = RightController->GetActorLocation();
+	FVector LookVector = RightController->GetActorForwardVector();
 
 	/*
 		// Project in a straight line to find location
