@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStaticsTypes.h"
 #include "DrawDebugHelpers.h"
 #include "Components/StaticMeshComponent.h"
+#include "IHeadMountedDisplay.h"
 #include "Components/SplineMeshComponent.h"
 
 // Sets default values
@@ -17,31 +18,39 @@ AVRCharacter::AVRCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	VRRoot = CreateDefaultSubobject<USceneComponent>(TEXT("VRRoot"));
-	VRRoot->SetupAttachment(GetRootComponent());
+	IsVR = IHeadMountedDisplayModule::IsAvailable();
+	
+	if (IsVR) {
+		VRRoot = CreateDefaultSubobject<USceneComponent>(TEXT("VRRoot"));
+		VRRoot->SetupAttachment(GetRootComponent());
 
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	Camera->SetupAttachment(VRRoot);
+		Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+		Camera->SetupAttachment(VRRoot);
 
-	LeftController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftController"));
-	LeftController->SetupAttachment(VRRoot);
-	LeftController->SetTrackingMotionSource(FXRMotionControllerBase::LeftHandSourceId);
+		LeftController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("LeftController"));
+		LeftController->SetupAttachment(VRRoot);
+		LeftController->SetTrackingMotionSource(FXRMotionControllerBase::LeftHandSourceId);
 
-	RightController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightController"));
-	RightController->SetupAttachment(VRRoot);
-	RightController->SetTrackingMotionSource(FXRMotionControllerBase::RightHandSourceId);
+		RightController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("RightController"));
+		RightController->SetupAttachment(VRRoot);
+		RightController->SetTrackingMotionSource(FXRMotionControllerBase::RightHandSourceId);
 
-	InvalidTeleportMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InvalidTeleportMesh"));
-	InvalidTeleportMesh->SetupAttachment(RightController);
+		InvalidTeleportMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InvalidTeleportMesh"));
+		InvalidTeleportMesh->SetupAttachment(RightController);
 
-	TeleportPath = CreateDefaultSubobject<USplineComponent>(TEXT("TeleportPath"));
-	TeleportPath->SetupAttachment(RightController);
+		TeleportPath = CreateDefaultSubobject<USplineComponent>(TEXT("TeleportPath"));
+		TeleportPath->SetupAttachment(RightController);
 
-	DestinationMarker = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DestinationMarker"));
-	DestinationMarker->SetupAttachment(GetRootComponent());
+		DestinationMarker = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DestinationMarker"));
+		DestinationMarker->SetupAttachment(GetRootComponent());
 
-	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent"));
-	PostProcessComponent->SetupAttachment(GetRootComponent());
+		PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent"));
+		PostProcessComponent->SetupAttachment(GetRootComponent());
+	}
+	else {
+		// Hide the VR stuff
+		VRRoot->SetVisibility(false, true);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -59,6 +68,9 @@ void AVRCharacter::BeginPlay()
 void AVRCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// The following logic is only required for VR
+	if (!IsVR) return;
 
 	// Calculate camera (player) movement in playspace
 	FVector CameraOffset = Camera->GetComponentLocation() - GetActorLocation();
@@ -231,11 +243,16 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAxis(TEXT("Forward"), this, &AVRCharacter::MoveForward);
-	PlayerInputComponent->BindAxis(TEXT("Right"), this, &AVRCharacter::MoveRight);
+	// VR Controls
 	PlayerInputComponent->BindAction(TEXT("Teleport"), IE_Released, this, &AVRCharacter::BeginTeleport);
 	PlayerInputComponent->BindAction(TEXT("TimeTravel"), IE_Released, this, &AVRCharacter::TimeTravel);
 	PlayerInputComponent->BindAction(TEXT("ResetPlayer"), IE_Released, this, &AVRCharacter::ResetPlayer);
+	
+	// Non-VR Controls
+	PlayerInputComponent->BindAxis(TEXT("MouseX"), this, &AVRCharacter::CameraX);
+	PlayerInputComponent->BindAxis(TEXT("MouseY"), this, &AVRCharacter::CameraY);
+	PlayerInputComponent->BindAxis(TEXT("Forward"), this, &AVRCharacter::MoveForward);
+	PlayerInputComponent->BindAxis(TEXT("Right"), this, &AVRCharacter::MoveRight);
 }
 
 void AVRCharacter::MoveForward(float throttle)
@@ -246,6 +263,18 @@ void AVRCharacter::MoveForward(float throttle)
 void AVRCharacter::MoveRight(float throttle)
 {
 	AddMovementInput(throttle * Camera->GetRightVector());
+}
+
+void AVRCharacter::CameraX(float speed)
+{
+	FRotator Rotation = FRotator(0, speed, 0);
+	Camera->AddRelativeRotation(Rotation);
+}
+
+void AVRCharacter::CameraY(float speed)
+{
+	FRotator Rotation = FRotator(speed, 0, 0);
+	Camera->AddRelativeRotation(Rotation);
 }
 
 // Switch between the levels to simlulate time travel

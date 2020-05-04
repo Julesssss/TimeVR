@@ -14,6 +14,7 @@
 #include "Components/SplineComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Curves/CurveFloat.h"
+#include "IHeadMountedDisplayModule.h"
 #include "VRCharacter.generated.h"
 
 UCLASS()
@@ -48,6 +49,8 @@ private:
 
 	void MoveForward(float throttle);
 	void MoveRight(float throttle);
+	void CameraX(float speed);
+	void CameraY(float speed);
 
 	void TimeTravel();
 	void ResetPlayer();
@@ -70,6 +73,8 @@ private:
 	bool IsFading = false;
 
 	bool IsInPast = false;
+
+	bool IsVR;
 	
 
 	// References
