@@ -219,37 +219,6 @@ void AVRCharacter::UpdateSpline(const TArray<FVector>& Path)
 	TeleportPath->UpdateSpline();
 }
 
-FVector2D AVRCharacter::GetVectorCenter() // delete
-{
-	FVector MovementDirection = GetVelocity().GetSafeNormal();
-	if (MovementDirection.IsNearlyZero()) return FVector2D(.5, .5);
-
-	FVector WorldStationaryLocation;
-	if (FVector::DotProduct(Camera->GetForwardVector(), MovementDirection) > 0)
-	{
-		WorldStationaryLocation = Camera->GetComponentLocation() + (MovementDirection * 1000);
-	}
-	else {
-		WorldStationaryLocation = Camera->GetComponentLocation() - (MovementDirection * 1000);
-	}
-
-	if (PlayerController == nullptr) return FVector2D(.5, .5);
-
-	FVector2D ScreenLocation;
-	PlayerController->ProjectWorldLocationToScreen(WorldStationaryLocation, ScreenLocation);
-
-	int32 ViewportX, ViewportY;
-	PlayerController->GetViewportSize(ViewportX, ViewportY);
-
-	UE_LOG(LogTemp, Warning, TEXT("ScreenLocation: %f, %f"), ScreenLocation.X, ScreenLocation.Y);
-	UE_LOG(LogTemp, Warning, TEXT("ViewportSize: %i, %i"), ViewportX, ViewportY);
-
-	ScreenLocation.X /= ViewportX;
-	ScreenLocation.Y /= ViewportY;
-
-	return ScreenLocation;
-}
-
 // Called to bind functionality to input
 void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
