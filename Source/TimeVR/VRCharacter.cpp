@@ -21,12 +21,13 @@ AVRCharacter::AVRCharacter()
 
 	bIsVR = IHeadMountedDisplayModule::IsAvailable();
 	
-	if (bIsVR) {
-		VRRoot = CreateDefaultSubobject<USceneComponent>(TEXT("VRRoot"));
-		VRRoot->SetupAttachment(GetRootComponent());
+	VRRoot = CreateDefaultSubobject<USceneComponent>(TEXT("VRRoot"));
+	VRRoot->SetupAttachment(GetRootComponent());
 
-		Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-		Camera->SetupAttachment(VRRoot);
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	Camera->SetupAttachment(VRRoot);
+
+	if (bIsVR) {
 
 		InvalidTeleportMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InvalidTeleportMesh"));
 		InvalidTeleportMesh->SetupAttachment(VRRoot);
@@ -39,7 +40,7 @@ AVRCharacter::AVRCharacter()
 	}
 	else {
 		// Hide the VR stuff
-		VRRoot->SetVisibility(false, true);
+		//VRRoot->SetVisibility(false, true);
 	}
 }
 
@@ -48,13 +49,13 @@ void AVRCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	DestinationMarker->SetVisibility(false);
-
 	// Setup global references
 	PlayerController = Cast<APlayerController>(GetController());
 
 	// Set up motion controllers
 	if (bIsVR) {
+		DestinationMarker->SetVisibility(false);
+
 		LeftController = GetWorld()->SpawnActor<AHandController>(HandControllerClass);
 		if (LeftController != nullptr) {
 			LeftController->AttachToComponent(VRRoot, FAttachmentTransformRules::KeepRelativeTransform);
@@ -86,6 +87,7 @@ void AVRCharacter::Tick(float DeltaTime)
 	// Move Actor to that position.
 	AddActorWorldOffset(CameraOffset);
 
+
 	// Move VRRoot in opposite Vector
 	VRRoot->AddWorldOffset(-CameraOffset);
 
@@ -97,15 +99,8 @@ bool AVRCharacter::FindDestinationMarker(TArray<FVector>& OutPath, FVector& OutL
 	FVector Start = RightController->GetActorLocation();
 	FVector LookVector;
 
-	if (bIsVR)
-	{
-		LookVector = RightController->GetActorForwardVector();
-	}
-	else
-	{
-		LookVector = Camera->GetForwardVector();
-	}
-
+	LookVector = RightController->GetActorForwardVector();
+	
 	/*
 		// Project in a straight line to find location
 
@@ -141,6 +136,11 @@ bool AVRCharacter::FindDestinationMarker(TArray<FVector>& OutPath, FVector& OutL
 
 void AVRCharacter::UpdateDestinationMarker()
 {
+	if (!bIsVR)
+	{
+		DestinationMarker->SetVisibility(false);
+	}
+
 	FVector OutLocation;
 	TArray<FVector> Path;
 	bool IsAllowedToTeleport = FindDestinationMarker(Path, OutLocation);
@@ -219,7 +219,7 @@ void AVRCharacter::UpdateSpline(const TArray<FVector>& Path)
 	TeleportPath->UpdateSpline();
 }
 
-FVector2D AVRCharacter::GetVectorCenter()
+FVector2D AVRCharacter::GetVectorCenter() // delete
 {
 	FVector MovementDirection = GetVelocity().GetSafeNormal();
 	if (MovementDirection.IsNearlyZero()) return FVector2D(.5, .5);
