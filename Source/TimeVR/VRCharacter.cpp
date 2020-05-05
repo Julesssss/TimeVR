@@ -136,7 +136,10 @@ bool AVRCharacter::FindDestinationMarker(TArray<FVector>& OutPath, FVector& OutL
 
 void AVRCharacter::UpdateDestinationMarker()
 {
-	if (!bIsVR) return;
+	if (!bIsVR)
+	{
+		DestinationMarker->SetVisibility(false);
+	}
 
 	FVector OutLocation;
 	TArray<FVector> Path;
