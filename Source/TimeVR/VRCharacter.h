@@ -69,13 +69,13 @@ private: // Configuration Parameters
 
 	FVector NewTeleportLocation;
 
-	bool IsTeleporting = false;
+	bool bIsTeleporting = false;
 
-	bool IsFading = false;
+	bool bIsFading = false;
 
-	bool IsInPast = false;
+	bool bIsInPast = false;
 
-	bool IsVR;
+	bool bIsVR;
 	
 
 	// References

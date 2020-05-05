@@ -19,9 +19,9 @@ AVRCharacter::AVRCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	IsVR = IHeadMountedDisplayModule::IsAvailable();
+	bIsVR = IHeadMountedDisplayModule::IsAvailable();
 	
-	if (IsVR) {
+	if (bIsVR) {
 		VRRoot = CreateDefaultSubobject<USceneComponent>(TEXT("VRRoot"));
 		VRRoot->SetupAttachment(GetRootComponent());
 
@@ -54,7 +54,7 @@ void AVRCharacter::BeginPlay()
 	PlayerController = Cast<APlayerController>(GetController());
 
 	// Set up motion controllers
-	if (IsVR) {
+	if (bIsVR) {
 		LeftController = GetWorld()->SpawnActor<AHandController>(HandControllerClass);
 		if (LeftController != nullptr) {
 			LeftController->AttachToComponent(VRRoot, FAttachmentTransformRules::KeepRelativeTransform);
@@ -77,7 +77,7 @@ void AVRCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// The following logic is only required for VR
-	if (!IsVR) return;
+	if (!bIsVR) return;
 
 	// Calculate camera (player) movement in playspace
 	FVector CameraOffset = Camera->GetComponentLocation() - GetActorLocation();
@@ -95,7 +95,16 @@ void AVRCharacter::Tick(float DeltaTime)
 bool AVRCharacter::FindDestinationMarker(TArray<FVector>& OutPath, FVector& OutLocation)
 {
 	FVector Start = RightController->GetActorLocation();
-	FVector LookVector = RightController->GetActorForwardVector();
+	FVector LookVector;
+
+	if (bIsVR)
+	{
+		LookVector = RightController->GetActorForwardVector();
+	}
+	else
+	{
+		LookVector = Camera->GetForwardVector();
+	}
 
 	/*
 		// Project in a straight line to find location
@@ -139,7 +148,7 @@ void AVRCharacter::UpdateDestinationMarker()
 	if (IsAllowedToTeleport) {
 		DestinationMarker->SetVisibility(true);
 
-		if (IsFading) {
+		if (bIsFading) {
 			DestinationMarker->SetWorldLocation(NewTeleportLocation);
 		}
 		else {
@@ -284,30 +293,30 @@ void AVRCharacter::CameraY(float speed)
 void AVRCharacter::TimeTravel()
 {
 	FVector currentLocation = GetActorLocation();
-	if (IsInPast) {
+	if (bIsInPast) {
 		currentLocation.Y -= UnitsBetweenlevels;
 	}
 	else {
 		currentLocation.Y += UnitsBetweenlevels;
 	}
 	SetActorLocation(currentLocation);
-	IsInPast = !IsInPast;
+	bIsInPast = !bIsInPast;
 }
 
 // Reset the play location (in case you fall off the map)
 void AVRCharacter::ResetPlayer()
 {
 	SetActorLocation(FVector(0.0, 0.0, 112.0));
-	IsInPast = false;
+	bIsInPast = false;
 }
 
 void AVRCharacter::BeginTeleport()
 {
-	if (IsTeleporting == false && PlayerController != nullptr && DestinationMarker->IsVisible()) {
+	if (bIsTeleporting == false && PlayerController != nullptr && DestinationMarker->IsVisible()) {
 
 		// Set Teleport status
-		IsTeleporting = true;
-		IsFading = true;
+		bIsTeleporting = true;
+		bIsFading = true;
 		NewTeleportLocation = DestinationMarker->GetComponentLocation();
 
 		CameraFade(0, 1, true);
@@ -327,7 +336,7 @@ void AVRCharacter::DoTeleport()
 	SetActorLocation(TeleportMarkerLocation);
 
 	// Re-show destination marker
-	IsFading = false;
+	bIsFading = false;
 
 	// Hold dark screen for a moment
 	FTimerHandle Handle;
@@ -340,7 +349,7 @@ void AVRCharacter::EndTeleport()
 	CameraFade(1, 0, false);
 
 	// Allow user to teleport as fade in occurs
-	IsTeleporting = false;
+	bIsTeleporting = false;
 }
 
 void AVRCharacter::CameraFade(float FromAlpha, float ToAlpha, bool ShouldHold)
