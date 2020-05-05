@@ -45,7 +45,6 @@ private: // Configuration Parameters
 	void UpdateDestinationMarker();
 	void DrawTeleportPath(const TArray<FVector>& Path);
 	void UpdateSpline(const TArray<FVector>& Path);
-	FVector2D GetVectorCenter();
 
 	void MoveForward(float throttle);
 	void MoveRight(float throttle);

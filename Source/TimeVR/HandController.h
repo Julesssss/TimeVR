@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "MotionControllerComponent.h"
+#include "InputCoreTypes.h"
 #include "HandController.generated.h"
 
 UCLASS()
@@ -27,8 +28,28 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	// Callbacks
+
+	UFUNCTION()
+	void ActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
+
+	UFUNCTION()
+	void ActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
+
+	// helpers
+	bool CanPickup() const;
+
+	EControllerHand MCHand;
+
 	// Default sub object
 	UPROPERTY(VisibleAnywhere)
 	class UMotionControllerComponent* MotionController;
+
+	// Parameters
+	UPROPERTY(EditDefaultsOnly)
+	class UHapticFeedbackEffect_Base* HapticEffect;
+
+	// State
+	bool bCanPickup = false;
 
 };
