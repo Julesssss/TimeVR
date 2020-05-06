@@ -16,10 +16,9 @@ void AElevator::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (!Trigger)
-	{
-		UE_LOG(LogTemp, Fatal, TEXT("%s has no trigger volume attached!"), *this->GetName());
-	}
+	Trigger = GetWorld()->SpawnActor<ATriggerBox>(FVector(this->GetActorLocation().X, this->GetActorLocation().Y, this->GetActorLocation().Z + 190), FRotator(0, 0, 0));
+	Trigger->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+	Trigger->SetActorScale3D(FVector(2.5f, 2.5f, 4.5f));
 
 	Player = GetWorld()->GetFirstPlayerController()->GetPawn();	
 

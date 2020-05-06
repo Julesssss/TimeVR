@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Engine/TriggerVolume.h"
+#include "Engine/TriggerBox.h"
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
 #include "Math/UnrealMathUtility.h"
@@ -38,11 +38,9 @@ private:
 		float MoveSpeed;
 
 	UPROPERTY(EditAnywhere)
-		ATriggerVolume* Trigger;
-
-	UPROPERTY(EditAnywhere)
 		float Height;
 
+	ATriggerBox* Trigger;
 	APawn* Player;
 
 	void MoveUp(float DeltaTime);
